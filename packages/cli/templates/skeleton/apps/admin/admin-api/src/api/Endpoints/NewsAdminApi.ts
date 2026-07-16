@@ -41,10 +41,10 @@ export default class NewsAdminApi {
 
     // POST /news/create — create. If publish_at is in the future, this is a deferred publication:
     // NewsService creates it as a draft (published=false), and the publisher worker publishes it on schedule.
+    // Nothing else to declare: 400 comes from the validated @Body, 401/403 from @RequireAdmin.
     @Post()
     @RequireAdmin()
     @ApiResponse(200, NewsDto)
-    @ApiResponse(422, ErrorResponseDto)
     async create(@Body() body: CreateNewsDto, @Meta("user") admin: UserOrm): Promise<NewsDto> {
         const item = await NewsService.create({
             title: body.title,

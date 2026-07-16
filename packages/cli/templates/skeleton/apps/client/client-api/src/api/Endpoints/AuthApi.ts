@@ -25,11 +25,12 @@ export default class AuthApi {
     // Rate-limited to 5/hour per IP: register must report WHY it fails (409 "login taken"), which
     // doubles as a login-enumeration oracle — the hourly cap keeps that (and brute-force) in check.
     // Unblock during development with `npm run ratelimit:reset -- register`.
+    // Only 409 is declared here: 400 comes from the validated @Body and 429 from @RateLimit — both
+    // add themselves to OpenAPI, the same way @RequireUser adds its 401 to `me` below.
     @Post("register")
     @RateLimit({bucket: "register", limit: 5, windowMs: 60 * 60 * 1000})
     @ApiResponse(200, AuthUserDto)
-    @ApiResponse(422, ErrorResponseDto)
-    @ApiResponse(429, ErrorResponseDto)
+    @ApiResponse(409, ErrorResponseDto, "Login already taken")
     async register(@Body() body: RegisterDto, @Res() res: Response): Promise<AuthUserDto> {
         const user = await UserService.register(body);
         await startSession(res, user.id);

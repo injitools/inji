@@ -9,7 +9,7 @@ import RoutesStorage, {
     TRouterResponse
 } from "./storages/RoutesStorage.js";
 import type {MiddlewareLike} from "./storages/RoutesStorage.js";
-import {detectContentType, generateSchema, DtoStorage, dataToDto} from "@injitools/contract";
+import {detectContentType, generateSchema, DtoStorage, dataToDto, ErrorResponseDto} from "@injitools/contract";
 import {ZodValidationError} from "./errors/ZodValidationError.js";
 
 type Route = {
@@ -147,10 +147,15 @@ export default class Router {
 
             // Group responses by status code and content-type
             const responsesByCode: Record<number, Record<string, any[]>> = {}
+            // Types already recorded per code+content-type. The same response is easily declared twice —
+            // a guard/rate-limit middleware contributes its own (see the Middleware decorator) and the
+            // controller repeats it — and without this the two would become anyOf[X, X] in the spec.
+            const typesByCode: Record<number, Record<string, Set<any>>> = {}
             const allResponses: TRouterResponse[] = [...route.responses]
             for (const response of allResponses) {
                 if (!responsesByCode[response.code]) {
                     responsesByCode[response.code] = {}
+                    typesByCode[response.code] = {}
                 }
 
                 // Auto-detect content-type if not specified
@@ -159,7 +164,11 @@ export default class Router {
                 if (response.type) {
                     if (!responsesByCode[response.code][contentType]) {
                         responsesByCode[response.code][contentType] = []
+                        typesByCode[response.code][contentType] = new Set()
                     }
+                    // Only a genuinely different type widens the response into a union.
+                    if (typesByCode[response.code][contentType].has(response.type)) continue
+                    typesByCode[response.code][contentType].add(response.type)
                     responsesByCode[response.code][contentType].push(generateSchema(response.type))
                 }
             }
@@ -168,9 +177,28 @@ export default class Router {
                 responsesByCode[200] = {'application/json': [z.object({})]}
             }
 
+            // Every declared input is validated at runtime (handleRequest → validator.parse), and a
+            // failure surfaces as a ZodValidationError → 400. Declare it from the route itself rather
+            // than relying on each controller to remember: a hand-written list drifts (the skeleton
+            // documented a 422 that nothing can return, while the 400 it DOES return went undeclared).
+            // An explicit @ApiResponse(400) still wins — the check below leaves it alone.
+            const validatesInput = route.inputs.some(input => input.validator)
+            if (validatesInput && !allResponses.some(r => r.code === 400)) {
+                const validationFailure: TRouterResponse = {
+                    code: 400,
+                    type: ErrorResponseDto,
+                    description: 'Validation Error',
+                }
+                allResponses.push(validationFailure)
+                responsesByCode[400] = {'application/json': [generateSchema(ErrorResponseDto)]}
+            }
+
             // Generate OpenAPI responses with multiple content-types
             for (const [code, contentTypes] of Object.entries(responsesByCode)) {
-                const firstResponse = allResponses.find(r => r.code === Number(code))
+                // Prefer whichever declaration actually carries a description: when a code comes from
+                // both a middleware and the controller, only one of them tends to describe it.
+                const described = allResponses.find(r => r.code === Number(code) && r.description)
+                    ?? allResponses.find(r => r.code === Number(code))
                 const content: Record<string, any> = {}
 
                 for (const [contentType, schemas] of Object.entries(contentTypes)) {
@@ -180,7 +208,7 @@ export default class Router {
                 }
 
                 paths[path][route.method].responses[code] = {
-                    description: firstResponse?.description || '',
+                    description: described?.description || '',
                     content
                 }
             }

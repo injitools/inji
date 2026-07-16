@@ -240,6 +240,23 @@ The backends need a metadata-emitting toolchain for decorators (`experimentalDec
 not import any `@injitools/*` package** — they consume the generated `src/api/schema.gen.ts`
 interfaces through a thin `fetch` client, so there are no framework decorators in the web bundle.
 
+`zod` is a **peer dependency** of `core`/`contract`/`db`, not a regular one: schemas cross the API
+boundary in both directions (`@DtoProperty({validation})` in, `ZodType` out), so your zod and the
+framework's must be the same instance. Declare `zod` in every workspace that imports it — the
+`inji init` scaffold already does.
+
+### One copy of the framework per process
+
+The DTO and route registries are process-wide (`globalThis` + `Symbol.for`, as zod v4 does for its
+own registry). Copies of the same version share them; copies of different versions throw at import.
+
+This matters because a guard is *registered* by a decorator and *read* by the router: if two copies
+of `@injitools/core` kept separate registries, `@RequireAdmin` would land in one and `InjiRouter`
+would read the other, so the route would be built without the guard — a 200 for anyone, with nothing
+in the logs. npm can duplicate the framework over a conflict that does not involve it at all (one
+transitive dependency pinning a different major of a shared library is enough), so the layout cannot
+be trusted. If an upgrade ever leaves a mixed tree, `npm ls @injitools/core` shows it.
+
 All packages are versioned in lockstep and released together from a single `v*.*.*` tag — see
 [CHANGELOG.md](CHANGELOG.md).
 

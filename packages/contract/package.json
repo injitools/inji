@@ -1,6 +1,6 @@
 {
   "name": "@injitools/contract",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "The DTO/validation layer of Inji: RequestDto/ResponseDto decorators, metadata store and Zod validation. Depends only on zod + reflect-metadata — no express or typeorm (layering hygiene).",
   "keywords": [
     "inji",
@@ -44,12 +44,15 @@
     "prepack": "npm run build"
   },
   "dependencies": {
-    "reflect-metadata": "^0.2.2",
-    "zod": "^4.3.6"
+    "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
     "@types/node": "^24.10.13",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.8"
+    "vitest": "^4.1.8",
+    "zod": "^4.3.6"
+  },
+  "peerDependencies": {
+    "zod": "^4.3.6"
   }
 }

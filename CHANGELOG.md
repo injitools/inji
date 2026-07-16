@@ -10,6 +10,62 @@ tag, so one entry below covers every package; the affected package is named on e
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-07-17
+
+### Added
+
+- **`@injitools/core` — a route that validates input now declares its `400` itself.** Every declared
+  input is validated at runtime and a failure becomes a `ZodValidationError` → 400, but that was
+  left to each controller to remember in an `@Response`, and the spec drifted: the scaffold
+  documented a `422` that nothing could return, while the `400` it does return went undeclared. The
+  router knows which routes validate input, so it emits the response. An explicit `@Response(400)`
+  still wins, and a route with no inputs does not claim a 400 it cannot produce.
+
+### Fixed
+
+- **`@injitools/core` — a status code declared by both a middleware and its controller produced
+  `anyOf[X, X]`.** A guard or `@RateLimit` contributes its own responses, and repeating one on the
+  controller widened the schema into a union of two identical `$ref`s. Responses are now
+  deduplicated per code + content-type by their declared type, and a description survives when the
+  other declaration omits it.
+- **`inji init` scaffold — corrected the declared status codes.** Dropped the unreachable `422` from
+  `NewsAdminApi.create` and `AuthApi.register`; dropped the `429` that `@RateLimit` already declares;
+  added the `409` that `UserService.register` genuinely throws when a login is taken and which was
+  missing from the contract.
+
+- **`@injitools/core`, `@injitools/contract` — a duplicated copy of the framework silently dropped
+  authorization guards.** The DTO and route registries were module-level `WeakMap`s, so two copies
+  in one process each got their own. A guard is *registered* by a decorator (`@RequireAdmin` →
+  `@Middleware` → `RoutesStorage`) and *read* by `InjiRouter` when it builds the express routes:
+  split the registry and the guard never reaches the route. The endpoint then answers unauthorized
+  callers with a 200, the app looks healthy, and nothing appears in the logs.
+
+  The registries now live in a process-wide slot (`globalThis` + `Symbol.for`, the same technique
+  zod v4 uses for its own global registry). Copies of the **same** version share one registry, so
+  duplication becomes harmless; copies of **different** versions throw at import instead, naming
+  both versions — silently merging records of possibly different shapes is worse than not starting.
+
+  This is not a hypothetical: npm duplicates a package for reasons that have nothing to do with it.
+  One conflicting transitive dependency elsewhere in a monorepo (a package pinning a different major
+  of a shared library) is enough to push the framework deeper into `node_modules` and clone it.
+  Aligning the `@injitools/*` ranges does not prevent it, because the conflict need not involve them.
+
+  > **Upgrading:** the protection only holds once **every** copy is ≥ 0.2.1. A 0.2.0 copy has no
+  > knowledge of the shared slot and will still split the registry silently, so a mixed 0.2.0/0.2.1
+  > tree stays vulnerable. Check with `npm ls @injitools/core @injitools/contract`.
+
+### Changed
+
+- **`@injitools/contract`, `@injitools/core`, `@injitools/db` — `zod` moved from `dependencies` to
+  `peerDependencies`.** zod is part of the public API surface, not an implementation detail: you
+  hand schemas in (`@DtoProperty({validation})`, `@OrmLink({validation, extend})`) and get a
+  `ZodType` back, so your zod and the framework's must be the same instance. As a regular dependency
+  the framework always resolved a correct zod@4 for itself, but *your* `import {z} from "zod"` could
+  silently resolve to an incompatible copy hoisted by something else — and a schema built with it
+  then failed deep inside schema generation with `Cannot read properties of undefined (reading
+  'def')`. As a peer, the mismatch surfaces at `npm install` instead. The `inji init` scaffold
+  already declares `zod` in every workspace that needs it and is unaffected.
+
 ## [0.2.0] - 2026-07-17
 
 ### Added
@@ -87,6 +143,7 @@ Initial public release of Inji on npm: `@injitools/contract`, `@injitools/core`,
 - **`@injitools/cli`** — `inji init`, scaffolding an API-first, app-centric monorepo (API + web +
   shadcn admin).
 
-[Unreleased]: https://github.com/injitools/inji/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/injitools/inji/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/injitools/inji/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/injitools/inji/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/injitools/inji/releases/tag/v0.1.0

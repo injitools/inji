@@ -6,8 +6,12 @@ import DtoStorage, {
     TDtoOrm,
 } from "../storages/DtoStorage.js";
 import type {Infer, InferInput, DtoConstructor} from "../infer.js";
+import {sharedSingleton} from "../singleton.js";
+import {VERSION} from "../version.js";
 
-const zodRegistry: { [id: string]: ZodType } = {}
+// Both are process-wide (see sharedSingleton): a duplicated copy of this package must share them,
+// or @injitools/db would register the resolver into one copy while DTOs are validated by another.
+const zodRegistry = sharedSingleton<{ [id: string]: ZodType }>("contract.zodRegistry", VERSION, () => ({}))
 
 /**
  * A hook for ORM validation. The core (@injitools/core) does not depend on typeorm, so
@@ -27,10 +31,14 @@ export type OrmZodResolver = (
     direction: DtoDirection,
     overrides?: OrmZodOverrides,
 ) => ZodType
-let ormZodResolver: OrmZodResolver | null = null
+const ormZodResolverBox = sharedSingleton<{ current: OrmZodResolver | null }>(
+    "contract.ormZodResolver",
+    VERSION,
+    () => ({current: null}),
+)
 
 export function setOrmZodResolver(resolver: OrmZodResolver) {
-    ormZodResolver = resolver
+    ormZodResolverBox.current = resolver
 }
 
 const boolFromQueryOrJson = () => z.preprocess((input) => {
@@ -119,13 +127,13 @@ export function generateZodValidation(dtoClass: TDtoClass): ZodType {
                 }
                 break
             case DtoPropertyType.ORM_LINK:
-                if (!ormZodResolver) {
+                if (!ormZodResolverBox.current) {
                     throw new Error(
                         `ORM validation is not registered. Field "${key}" uses @OrmLink, ` +
                         `but no resolver is set. Install the @injitools/db package and import it before startup.`
                     )
                 }
-                object[key] = ormZodResolver(
+                object[key] = ormZodResolverBox.current(
                     (dto as TDtoOrm).db,
                     (dto as TDtoOrm).ormClass,
                     property.ormProperty,

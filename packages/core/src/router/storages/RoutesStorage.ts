@@ -1,5 +1,7 @@
 import {RequestHandler} from "express-serve-static-core";
+import {sharedSingleton} from "@injitools/contract";
 import RouterMiddleware from "../middlewares/RouterMiddleware.js";
+import {VERSION} from "../../version.js";
 
 export type ParamSource = "body" | "query" | "params" | "headers" | "req" | "res" | "next" | "meta";
 export type TRouter = {
@@ -34,7 +36,16 @@ export type TRouterMethodParam = {
 }
 
 export default class RoutesStorage {
-    private static registry = new WeakMap<Function, TRouterRecord>()
+    // Process-wide, not module-wide. This registry is where a guard lands: @RequireAdmin applies
+    // @Middleware, which writes here, and InjiRouter reads it when building the express routes.
+    // A duplicated copy of this package would split the two — the guard would be registered in one
+    // registry and the router would read the other, so the route would be built WITHOUT it and the
+    // endpoint would answer unauthorized callers with a 200. See sharedSingleton.
+    private static registry = sharedSingleton(
+        "core.routesRegistry",
+        VERSION,
+        () => new WeakMap<Function, TRouterRecord>(),
+    )
 
     static get(routerClass: Function) {
         return this.registry.get(routerClass)

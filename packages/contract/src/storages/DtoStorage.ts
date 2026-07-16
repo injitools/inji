@@ -1,4 +1,6 @@
 import {ZodType} from "zod";
+import {sharedSingleton} from "../singleton.js";
+import {VERSION} from "../version.js";
 
 export type TDtoClass = (new () => unknown) | Function
 
@@ -68,7 +70,13 @@ export enum DtoPropertyType {
 }
 
 export default class DtoStorage {
-    private static registry = new WeakMap<TDtoClass, TDtoRecord>()
+    // Process-wide, not module-wide: a duplicated copy of this package must not get a registry of
+    // its own, or a @Dto/@OrmLink applied through one copy would be invisible to the other.
+    private static registry = sharedSingleton(
+        "contract.dtoRegistry",
+        VERSION,
+        () => new WeakMap<TDtoClass, TDtoRecord>(),
+    )
 
     static has(dtoClass: TDtoClass) {
         return this.registry.has(dtoClass)

@@ -1,6 +1,6 @@
 {
   "name": "@injitools/core",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Core of the Inji framework: declarative router, DTO/Zod validation, OpenAPI generation and error handling. No database dependency.",
   "keywords": [
     "inji",
@@ -58,16 +58,19 @@
     "prepack": "npm run build"
   },
   "dependencies": {
-    "@injitools/contract": "^0.2.0",
+    "@injitools/contract": "^0.2.1",
     "express": "^5.2.1",
     "reflect-metadata": "^0.2.2",
-    "zod": "^4.3.6",
     "zod-openapi": "^5.4.6"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^24.10.13",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.8"
+    "vitest": "^4.1.8",
+    "zod": "^4.3.6"
+  },
+  "peerDependencies": {
+    "zod": "^4.3.6"
   }
 }

@@ -56,6 +56,13 @@ export {
 } from "./validators/validation.js";
 export type {OrmZodResolver, OrmZodOverrides, PrimitiveType} from "./validators/validation.js";
 
+// ── Duplicate-copy protection ──────────────────────────────────────────────────────
+// Module-level registries are shared process-wide so that a duplicated copy of the framework
+// (which npm can force for reasons unrelated to these packages) cannot silently split them —
+// which would drop authorization guards on the floor. Used by core's RoutesStorage too.
+export {sharedSingleton} from "./singleton.js";
+export {VERSION} from "./version.js";
+
 // ── Reusable zod primitives ──────────────────────────────────────────────
 // Ready-made validators for @DtoProperty({validation: ...}) — they remove duplication in DTOs.
 export {

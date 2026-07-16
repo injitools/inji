@@ -2,7 +2,10 @@
 // ":id" → "{id}" conversion, responses and security schemes from middleware.
 import "reflect-metadata";
 import {describe, test, expect} from "vitest";
-import {Router, Get, Response, Middleware, createMiddleware, InjiRouter} from "@injitools/core";
+import {
+    Router, Get, Post, Body, Response, Middleware, createMiddleware, InjiRouter,
+    RequestDto, DtoProperty, ErrorResponseDto, buildOpenApiDocument,
+} from "@injitools/core";
 import {EchoApi} from "./fixtures/api-controllers.js";
 
 // Controller with security middleware — verify collection of components.securitySchemes and security[].
@@ -62,5 +65,86 @@ describe("Router.toOpenApi()", () => {
         expect(secured.components?.securitySchemes?.bearerAuth).toMatchObject({type: "http", scheme: "bearer"});
         const op = secured.paths["/secure/data"].get as any;
         expect(op.security).toContainEqual({bearerAuth: []});
+    });
+});
+
+// The runtime validates every declared input and turns a failure into a ZodValidationError → 400.
+// The spec has to say so on its own: a hand-kept list drifts away from the code (the skeleton used
+// to document a 422 that nothing could return, while the 400 it does return was undeclared).
+describe("400 for a validated input is declared by the route itself", () => {
+    @RequestDto()
+    class CreateBody {
+        @DtoProperty() title!: string;
+    }
+
+    const rateLimited = createMiddleware((_req: any, _res: any, next: any) => next())
+        .responses({code: 429, description: "Too Many Requests", type: ErrorResponseDto});
+
+    @Router("auto")
+    class AutoApi {
+        // Has a @Body → validated → 400 is reachable.
+        @Post("create")
+        @Response(200, String)
+        create(@Body() _body: CreateBody): string {
+            return "ok";
+        }
+
+        // No inputs at all → nothing can fail validation → no 400.
+        @Get("ping")
+        @Response(200, String)
+        ping(): string {
+            return "pong";
+        }
+
+        // An explicit 400 must win over the generated one, and not be duplicated by it.
+        @Post("explicit")
+        @Response(200, String)
+        @Response(400, ErrorResponseDto, "Пользовательское описание")
+        explicit(@Body() _body: CreateBody): string {
+            return "ok";
+        }
+
+        // A middleware declaring the same code as the controller must not produce anyOf[X, X].
+        @Post("limited")
+        @Middleware(rateLimited)
+        @Response(200, String)
+        @Response(429, ErrorResponseDto)
+        limited(@Body() _body: CreateBody): string {
+            return "ok";
+        }
+    }
+
+    // Assert on the BUILT document, not on toOpenApi(): that one still returns zod schemas, and a
+    // ZodUnion has no `.anyOf` property — so checking `schema.anyOf` there passes even when the spec
+    // is wrong. The JSON Schema only exists after createDocument().
+    const doc: any = buildOpenApiDocument(new InjiRouter([AutoApi]) as any, {title: "t", port: 1});
+    const op = (p: string, m: string) => doc.paths[p][m];
+
+    test("a route with a validated input declares 400", () => {
+        const r = op("/auto/create", "post").responses["400"];
+        expect(r).toBeDefined();
+        expect(r.description).toBe("Validation Error");
+        expect(r.content["application/json"].schema).toEqual({$ref: "#/components/schemas/ErrorResponseDto"});
+    });
+
+    test("a route with no inputs does not claim a 400 it cannot return", () => {
+        expect(op("/auto/ping", "get").responses["400"]).toBeUndefined();
+    });
+
+    test("an explicit @Response(400) wins and is not duplicated", () => {
+        const r = op("/auto/explicit", "post").responses["400"];
+        expect(r.description).toBe("Пользовательское описание");
+        expect(r.content["application/json"].schema.anyOf).toBeUndefined();
+    });
+
+    test("the same code from a middleware and the controller collapses into one schema", () => {
+        const r = op("/auto/limited", "post").responses["429"];
+        expect(r.content["application/json"].schema.anyOf, "429 declared twice must not become anyOf[X, X]")
+            .toBeUndefined();
+        expect(r.content["application/json"].schema).toEqual({$ref: "#/components/schemas/ErrorResponseDto"});
+    });
+
+    test("a description from a middleware survives when the controller declares the code bare", () => {
+        expect(op("/auto/limited", "post").responses["429"].description).toBe("Too Many Requests");
     });
 });

@@ -21,7 +21,7 @@
   "bugs": "https://github.com/injitools/inji/issues",
   "type": "module",
   "bin": {
-    "inji": "./dist/cli.js"
+    "inji": "dist/cli.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

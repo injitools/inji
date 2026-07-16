@@ -1,0 +1,15 @@
+{
+  // Separate config for vitest --typecheck: strict mode (like a frontend consumer),
+  // so that comparing Infer/InferInput against the reference is honest (optional → '| undefined', etc.).
+  // The base tsconfig is non-strict, so we enable strict explicitly here.
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": false,
+    "lib": ["ES2022", "DOM"],
+    "types": ["reflect-metadata"]
+  },
+  "include": ["infer.test-d.ts", "fixtures/infer-app.ts"]
+}

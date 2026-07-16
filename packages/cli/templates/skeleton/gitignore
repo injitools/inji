@@ -1,0 +1,14 @@
+node_modules/
+dist/
+*.tsbuildinfo
+
+# environment
+.env
+.env.*
+!.env.example
+
+# vite
+frontend/web/dist/
+frontend/admin/dist/
+
+.DS_Store

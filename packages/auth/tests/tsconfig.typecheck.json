@@ -1,0 +1,14 @@
+{
+  // Strict config for vitest --typecheck: verifies that pluggable identity (issue #6)
+  // is type-safe without `as any` — the UUID entity plugs into SessionService<string>.
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": false,
+    "lib": ["ES2022"],
+    "types": ["node", "reflect-metadata"]
+  },
+  "include": ["identity.test-d.ts"]
+}

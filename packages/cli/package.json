@@ -1,0 +1,41 @@
+{
+  "name": "@injitools/cli",
+  "version": "0.1.0",
+  "description": "CLI for Inji: scaffolds a starter monorepo (inji init).",
+  "keywords": [
+    "inji",
+    "cli",
+    "scaffold",
+    "generator",
+    "monorepo",
+    "typescript"
+  ],
+  "author": "Alexey Krupsky <admin@inji.ru>",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "inji": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20.12.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepack": "npm run build"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^24.10.13",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    // The DOM lib provides a global URL (UrlLike extends URL) without depending on @types/node.
+    "lib": ["ES2022", "DOM"],
+    // Only reflect-metadata: we deliberately do NOT include @types/node, so that any
+    // accidental node dependency in this package fails already at the typecheck stage.
+    "types": ["reflect-metadata"]
+  },
+  "include": ["src/**/*.ts"]
+}

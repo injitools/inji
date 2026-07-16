@@ -1,0 +1,37 @@
+{
+  "name": "@app/client-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/client-api.js",
+  "scripts": {
+    "dev": "tsc -b && concurrently -k -n tsc,node -c gray,blue \"tsc -b -w --preserveWatchOutput\" \"node --enable-source-maps --watch dist/client-api.js\"",
+    "start": "node --enable-source-maps dist/client-api.js",
+    "build": "tsc -b",
+    "typecheck": "tsc -b",
+    "gen": "tsc -b && node --enable-source-maps dist/codegen.js"
+  },
+  "dependencies": {
+    "@app/domain": "*",
+    "@injitools/auth": "^0.1.0-preview.1",
+    "@injitools/core": "^0.1.0-preview.1",
+    "@injitools/db": "^0.1.0-preview.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "reflect-metadata": "^0.2.2",
+    "swagger-ui-express": "^5.0.1",
+    "typeorm": "^0.3.28",
+    "zod": "^4.3.6",
+    "zod-openapi": "^5.4.6"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.10.13",
+    "@types/swagger-ui-express": "4.1.8",
+    "concurrently": "^9.1.0",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "name": "@injitools/auth",
+  "version": "0.1.0",
+  "description": "Batteries-included auth for Inji: cookie sessions and Bearer API keys on TypeORM, with OpenAPI-aware middleware.",
+  "keywords": [
+    "inji",
+    "auth",
+    "session",
+    "cookie",
+    "bearer",
+    "typeorm",
+    "express",
+    "typescript"
+  ],
+  "author": "Alexey Krupsky <admin@inji.ru>",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20.12.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && vitest run",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@injitools/core": "^0.1.0",
+    "@injitools/db": "^0.1.0"
+  },
+  "peerDependencies": {
+    "express": "^5.2.1",
+    "typeorm": "^0.3.28"
+  },
+  "devDependencies": {
+    "@swc/core": "^1.15.40",
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.10.13",
+    "express": "^5.2.1",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.28",
+    "typescript": "^5.9.3",
+    "unplugin-swc": "^1.5.9",
+    "vite": "^8.0.16",
+    "vitest": "^4.1.8"
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "name": "@injitools/core",
+  "version": "0.1.0",
+  "description": "Core of the Inji framework: declarative router, DTO/Zod validation, OpenAPI generation and error handling. No database dependency.",
+  "keywords": [
+    "inji",
+    "openapi",
+    "express",
+    "zod",
+    "dto",
+    "validation",
+    "rest-api",
+    "typescript"
+  ],
+  "author": "Alexey Krupsky <admin@inji.ru>",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./runtime": {
+      "types": "./dist/runtime.d.ts",
+      "import": "./dist/runtime.js"
+    },
+    "./lifecycle": {
+      "types": "./dist/lifecycle.d.ts",
+      "import": "./dist/lifecycle.js"
+    },
+    "./codegen": {
+      "types": "./dist/openapi/codegen.d.ts",
+      "import": "./dist/openapi/codegen.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20.12.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && vitest run",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@injitools/contract": "^0.1.0",
+    "express": "^5.2.1",
+    "reflect-metadata": "^0.2.2",
+    "zod": "^4.3.6",
+    "zod-openapi": "^5.4.6"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.10.13",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.8"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "name": "__PROJECT_NAME__",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=21.7.0"
+  },
+  "workspaces": [
+    "domain",
+    "apps/client/client-api",
+    "apps/client/client-web",
+    "apps/admin/admin-api",
+    "apps/admin/admin-web",
+    "apps/publisher"
+  ],
+  "scripts": {
+    "build": "tsc -b && npm run build -w @app/client-web && npm run build -w @app/admin-web",
+    "typecheck": "tsc -b && npm run typecheck -w @app/client-web && npm run typecheck -w @app/admin-web",
+    "dev": "tsc -b && concurrently -k -n tsc,client-api,admin-api,publisher,client-web,admin-web -c gray,blue,magenta,yellow,green,cyan \"npm:dev:tsc\" \"npm:dev:client-api\" \"npm:dev:admin-api\" \"npm:dev:publisher\" \"npm:dev:client-web\" \"npm:dev:admin-web\"",
+    "dev:tsc": "tsc -b -w --preserveWatchOutput",
+    "dev:client-api": "node --enable-source-maps --watch apps/client/client-api/dist/client-api.js",
+    "dev:admin-api": "node --enable-source-maps --watch apps/admin/admin-api/dist/admin-api.js",
+    "dev:publisher": "node --enable-source-maps --watch apps/publisher/dist/publisher.js",
+    "dev:client-web": "npm run dev -w @app/client-web",
+    "dev:admin-web": "npm run dev -w @app/admin-web",
+    "seed": "npm run seed -w @app/domain",
+    "ratelimit:reset": "npm run ratelimit:reset -w @app/domain",
+    "gen": "npm run gen -w @app/client-api && npm run gen -w @app/admin-api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

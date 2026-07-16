@@ -1,0 +1,11 @@
+{
+  "//": "Monorepo solution file: a single `tsc -b` builds the shared domain and every app process",
+  "//2": "(client-api, admin-api, publisher) honoring project references. Frontends (web/admin) are built with Vite.",
+  "files": [],
+  "references": [
+    {"path": "./domain"},
+    {"path": "./apps/client/client-api"},
+    {"path": "./apps/admin/admin-api"},
+    {"path": "./apps/publisher"}
+  ]
+}

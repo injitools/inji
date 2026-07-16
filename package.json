@@ -1,0 +1,25 @@
+{
+  "name": "inji-fast-start",
+  "version": "0.1.0",
+  "description": "Inji — a declarative API framework on Express + Zod + TypeORM with OpenAPI auto-generation.",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/contract",
+    "packages/core",
+    "packages/db",
+    "packages/auth",
+    "packages/cli"
+  ],
+  "scripts": {
+    "build": "npm run build -w @injitools/contract && npm run build -w @injitools/core && npm run build -w @injitools/db && npm run build -w @injitools/auth && npm run build -w @injitools/cli",
+    "test": "npm run test -w @injitools/contract && npm run test -w @injitools/core && npm run test -w @injitools/db && npm run test -w @injitools/auth",
+    "clean": "node -e \"const{rmSync}=require('fs');for(const p of ['contract','core','db','auth','cli'])rmSync(`packages/${p}/dist`,{recursive:true,force:true})\"",
+    "typecheck": "npm run typecheck -w @injitools/contract && npm run typecheck -w @injitools/core && npm run typecheck -w @injitools/db && npm run typecheck -w @injitools/auth && npm run typecheck -w @injitools/cli",
+    "verify:skeleton": "node scripts/verify-skeleton.mjs"
+  },
+  "engines": {
+    "node": ">=20.12.0"
+  },
+  "license": "MIT"
+}

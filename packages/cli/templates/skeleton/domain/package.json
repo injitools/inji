@@ -1,0 +1,36 @@
+{
+  "name": "@app/domain",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "import": "./dist/*.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b",
+    "seed": "tsc -b && node --enable-source-maps dist/seed.js",
+    "ratelimit:reset": "tsc -b && node --enable-source-maps dist/rateLimitReset.js"
+  },
+  "dependencies": {
+    "@injitools/auth": "^0.1.0-preview.1",
+    "@injitools/core": "^0.1.0-preview.1",
+    "@injitools/db": "^0.1.0-preview.1",
+    "pg": "^8.18.0",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.28",
+    "zod": "^4.3.6",
+    "zod-openapi": "^5.4.6"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.13",
+    "typescript": "^5.9.3"
+  }
+}

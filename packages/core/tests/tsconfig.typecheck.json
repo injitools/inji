@@ -1,0 +1,14 @@
+{
+  // Strict config for vitest --typecheck: verifies the client types (RouterClient<R>) as seen by
+  // a frontend consumer. The base tsconfig is non-strict, so we enable strict explicitly.
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": false,
+    "lib": ["ES2022", "DOM"],
+    "types": ["node", "reflect-metadata"]
+  },
+  "include": ["client.test-d.ts", "fixtures/api-controllers.ts"]
+}

@@ -1,0 +1,27 @@
+{
+  "name": "@app/publisher",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/publisher.js",
+  "scripts": {
+    "dev": "tsc -b && concurrently -k -n tsc,node -c gray,yellow \"tsc -b -w --preserveWatchOutput\" \"node --enable-source-maps --watch dist/publisher.js\"",
+    "start": "node --enable-source-maps dist/publisher.js",
+    "build": "tsc -b",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@app/domain": "*",
+    "@injitools/core": "^0.1.0-preview.1",
+    "@injitools/db": "^0.1.0-preview.1",
+    "pg": "^8.18.0",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.28",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.13",
+    "concurrently": "^9.1.0",
+    "typescript": "^5.9.3"
+  }
+}

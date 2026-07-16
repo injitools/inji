@@ -57,7 +57,11 @@ jobs:
         run: |
           set -uo pipefail
           fail=0
-          for pkg in contract core db auth cli; do
+          # Reverse dependency order (contract <- core <- db <- auth; cli is standalone).
+          # npm refuses to unpublish a version while something in the registry still depends on it,
+          # and these packages depend on each other — so the leaves have to go first, otherwise
+          # every parent is rejected with E405 "has dependent packages in the registry".
+          for pkg in cli auth db core contract; do
             name="@injitools/$pkg"
             for ver in ${{ inputs.versions }}; do
               spec="$name@$ver"
@@ -76,7 +80,10 @@ jobs:
           done
           exit $fail
 
+      # always(): the point of this step is to show the real state, and that matters most when the
+      # apply above failed partway — the first run left auth/cli unpublished and the rest intact.
       - name: Read the registry back
+        if: always()
         run: |
           echo "=== remaining versions ==="
           for pkg in contract core db auth cli; do

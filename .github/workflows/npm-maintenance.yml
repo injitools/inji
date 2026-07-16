@@ -10,6 +10,14 @@ name: npm maintenance
 # UNPUBLISH IS PERMANENT: the version disappears and its number can never be published again.
 # Anyone whose lockfile pins it gets a hard 404 until they move. That is the point when the version
 # being removed is unsafe, but there is no undo — hence the explicit confirm input.
+#
+# It also mostly does not work here, by npm policy: a version cannot be unpublished while anything
+# in the registry depends on the PACKAGE (the check is package-wide, not per-version), and these
+# packages depend on each other — contract <- core <- db <- auth. The current 0.2.1 releases
+# therefore pin their own parents in place forever. Only the leaves (auth, cli) could be removed.
+# The 72-hour window does NOT bypass this: both criteria must hold.
+# See https://docs.npmjs.com/policies/unpublish — deprecate is the supported path; a support
+# ticket is the only exception route.
 
 on:
   workflow_dispatch:
@@ -71,7 +79,10 @@ jobs:
               fi
               if [ "${{ inputs.action }}" = "unpublish" ]; then
                 echo "→ unpublishing $spec"
-                npm unpublish "$spec" --force || fail=1
+                # NO --force. It is not needed to remove a single version, and combined with one it
+                # has been reported to ignore the version and unpublish the WHOLE package
+                # (npm/cli#7015) — which here would take the live 0.2.1 with it.
+                npm unpublish "$spec" || fail=1
               else
                 echo "→ deprecating $spec"
                 npm deprecate "$spec" "${{ inputs.message }}" || fail=1

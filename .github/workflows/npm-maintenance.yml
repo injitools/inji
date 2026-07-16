@@ -1,0 +1,86 @@
+name: npm maintenance
+
+# One-off registry surgery (unpublish / deprecate), run by hand.
+#
+# Why a workflow instead of running npm locally: writes to the registry demand a TOTP code when the
+# account has 2FA, and a security key cannot produce one. The NPM_INJITOOLS_TOKEN used for releases
+# is an automation token, which bypasses 2FA — so the work happens here and the token never leaves
+# GitHub.
+#
+# UNPUBLISH IS PERMANENT: the version disappears and its number can never be published again.
+# Anyone whose lockfile pins it gets a hard 404 until they move. That is the point when the version
+# being removed is unsafe, but there is no undo — hence the explicit confirm input.
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "What to do"
+        type: choice
+        options: [deprecate, unpublish]
+        required: true
+      versions:
+        description: "Space-separated exact versions, e.g. '0.1.0 0.2.0'"
+        required: true
+      message:
+        description: "Deprecation message (ignored for unpublish)"
+        required: false
+        default: "Upgrade to >=0.2.1"
+      confirm:
+        description: "Type UNPUBLISH to allow an unpublish. Ignored for deprecate."
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22.x
+          registry-url: https://registry.npmjs.org
+
+      - name: Guard the unpublish
+        if: inputs.action == 'unpublish' && inputs.confirm != 'UNPUBLISH'
+        run: |
+          echo "::error::unpublish is permanent — re-run with confirm=UNPUBLISH to proceed."
+          exit 1
+
+      - name: Apply
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_INJITOOLS_TOKEN }}
+        run: |
+          set -uo pipefail
+          fail=0
+          for pkg in contract core db auth cli; do
+            name="@injitools/$pkg"
+            for ver in ${{ inputs.versions }}; do
+              spec="$name@$ver"
+              if ! npm view "$spec" version >/dev/null 2>&1; then
+                echo "· $spec — not on the registry, skipping"
+                continue
+              fi
+              if [ "${{ inputs.action }}" = "unpublish" ]; then
+                echo "→ unpublishing $spec"
+                npm unpublish "$spec" --force || fail=1
+              else
+                echo "→ deprecating $spec"
+                npm deprecate "$spec" "${{ inputs.message }}" || fail=1
+              fi
+            done
+          done
+          exit $fail
+
+      - name: Read the registry back
+        run: |
+          echo "=== remaining versions ==="
+          for pkg in contract core db auth cli; do
+            printf '%-10s ' "$pkg"
+            npm view "@injitools/$pkg" versions --json 2>/dev/null | tr -d '\n[] "' || echo "(gone)"
+            echo
+          done

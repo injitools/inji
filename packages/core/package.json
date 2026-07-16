@@ -14,6 +14,13 @@
   ],
   "author": "Alexey Krupsky <admin@inji.ru>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/injitools/inji.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/injitools/inji/tree/main/packages/core#readme",
+  "bugs": "https://github.com/injitools/inji/issues",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

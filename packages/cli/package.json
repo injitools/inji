@@ -12,6 +12,13 @@
   ],
   "author": "Alexey Krupsky <admin@inji.ru>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/injitools/inji.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/injitools/inji/tree/main/packages/cli#readme",
+  "bugs": "https://github.com/injitools/inji/issues",
   "type": "module",
   "bin": {
     "inji": "./dist/cli.js"

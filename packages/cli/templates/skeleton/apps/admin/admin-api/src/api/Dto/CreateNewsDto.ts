@@ -1,4 +1,4 @@
-import {RequestDto, DtoProperty, IsoDateTime} from "@injitools/core";
+import {RequestDto} from "@injitools/core";
 import {OrmLink} from "@injitools/db";
 
 import {dbMain} from "@app/domain/db/dataSource";
@@ -8,6 +8,8 @@ import NewsOrm from "@app/domain/db/entities/NewsOrm";
 //  • title  varchar(200)        → string, max 200, required
 //  • body   text                → string, required
 //  • published boolean default  → boolean, optional (has a default)
+//  • publish_at timestamptz     → ISO-8601 string with an offset on the wire, parsed to a Date,
+//                                 optional (the column is nullable)
 // This is exactly "validation from TypeORM entities": the entity is the single source of truth.
 @RequestDto(NewsOrm, dbMain)
 export class CreateNewsDto {
@@ -20,8 +22,7 @@ export class CreateNewsDto {
     @OrmLink()
     published?: boolean;
 
-    // publish_at is not derived from the ORM: on the wire it is an ISO string, while in the entity it is a Date.
-    // We define it with an explicit Zod schema. If the time is in the future, publication is deferred (see NewsAdminApi).
-    @DtoProperty({optional: true, validation: IsoDateTime})
-    publish_at?: string;
+    // If the time is in the future, publication is deferred (see NewsAdminApi).
+    @OrmLink()
+    publish_at?: Date;
 }

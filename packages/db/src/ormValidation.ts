@@ -1,6 +1,24 @@
 import {z, ZodType} from "zod";
 import {DataSource} from "typeorm";
-import type {DtoDirection} from "@injitools/core";
+import type {DtoDirection, OrmZodOverrides} from "@injitools/core";
+
+/**
+ * The wire form of a moment in time: an ISO-8601 string WITH an offset, parsed into a Date.
+ *
+ * Why not z.coerce.date(): it accepts a naive "2026-01-01T00:00:00" (no offset — the exact
+ * ambiguity a timestamptz column exists to prevent) and silently turns the number 0 into
+ * 1970-01-01. It is also inexpressible in JSON Schema, so zod-openapi degrades it to a bare
+ * `{type: "string"}` and the generated contract loses `format: date-time`.
+ *
+ * Why preprocess and not a union with z.date(): a ready Date is still accepted (an inter-server
+ * caller may pass one) by normalizing it to ISO first. A union would widen the OpenAPI schema to
+ * `anyOf[{string, format}, {string}]`; preprocess keeps it exactly `{type: string, format: date-time}`.
+ * An Invalid Date is passed through untouched (toISOString() would throw) and rejected downstream.
+ */
+const isoDateTimeToDate = () => z.preprocess(
+    (v) => (v instanceof Date && !Number.isNaN(v.getTime()) ? v.toISOString() : v),
+    z.iso.datetime({offset: true}).transform((s) => new Date(s)),
+);
 
 /**
  * Generates a Zod schema from the metadata of a TypeORM ORM column.
@@ -17,6 +35,7 @@ export function generateOrmZodValidation(
     ormClass: Function,
     ormProperty: string,
     direction: DtoDirection = "request",
+    overrides?: OrmZodOverrides,
 ): ZodType {
     const ormMeta = db.getMetadata(ormClass)
     const columnMeta = ormMeta.findColumnWithPropertyName(ormProperty)
@@ -100,25 +119,33 @@ export function generateOrmZodValidation(
             schema = z.coerce.boolean()
             break
 
+        // A moment in time. On the wire it is always an ISO-8601 string with an offset; the entity
+        // holds a Date. Response → the ISO string as sent; request → that string parsed to a Date,
+        // so the domain receives a Date and never has to know the wire format.
         case Date:
         case 'datetime':
         case 'datetime2':
         case 'datetimeoffset':
-        case 'time':
-        case 'time with time zone':
-        case 'time without time zone':
         case 'timestamp':
         case 'timestamp without time zone':
         case 'timestamp with time zone':
         case 'timestamp with local time zone':
-        case 'timetz':
         case 'timestamptz':
         case 'smalldatetime':
-        case 'date':
-        case 'year':
         case 'seconddate':
-            // On the wire a response carries an ISO string, while the entity holds a Date.
-            // Input coerces a string/number/Date → Date; output stays an ISO string.
+            schema = direction === "response" ? z.iso.datetime({offset: true}) : isoDateTimeToDate()
+            break
+
+        // Calendar dates ('2026-01-01'), clock times ('12:30:00') and years are NOT moments in
+        // time and have no offset, so the ISO-datetime form above would reject them. They keep the
+        // old coercion for now — deriving these precisely is a separate question (a `date` column
+        // comes back from TypeORM as a string, not a Date).
+        case 'date':
+        case 'time':
+        case 'time with time zone':
+        case 'time without time zone':
+        case 'timetz':
+        case 'year':
             schema = direction === "response" ? z.iso.datetime({offset: true}) : z.coerce.date()
             break
 
@@ -219,6 +246,18 @@ export function generateOrmZodValidation(
 
     if (columnMeta.isArray && columnMeta.type !== 'simple-array' && columnMeta.type !== 'array') {
         schema = z.array(schema)
+    }
+
+    // Overrides (see OrmLinkOptions). They act on the derived TYPE only — after the column type and
+    // its array-ness are resolved, but BEFORE the direction wraps it in .nullable()/.optional().
+    // That ordering is what lets `extend` call refinements: it still sees a plain ZodString (with
+    // the derived .max(length) on it), not a ZodOptional that has no .min(). The column keeps
+    // driving nullability/optionality either way, so an overridden field stays linked to it.
+    if (overrides?.validation) {
+        schema = overrides.validation
+    }
+    if (overrides?.extend) {
+        schema = overrides.extend(schema)
     }
 
     if (direction === "response") {

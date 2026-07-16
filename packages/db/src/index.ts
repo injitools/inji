@@ -5,8 +5,8 @@
 import {setOrmZodResolver} from "@injitools/core";
 import {generateOrmZodValidation} from "./ormValidation.js";
 
-setOrmZodResolver((db, ormClass, ormProperty, direction) =>
-    generateOrmZodValidation(db as any, ormClass, ormProperty, direction)
+setOrmZodResolver((db, ormClass, ormProperty, direction, overrides) =>
+    generateOrmZodValidation(db as any, ormClass, ormProperty, direction, overrides)
 );
 
 // --- ORM-DTO decorators ---------------------------------------------------------

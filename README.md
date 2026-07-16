@@ -120,7 +120,10 @@ A DTO's **direction** is a first-class distinction — a single class is never r
 
 - **`@RequestDto`** — an input body/query. `@OrmLink` fields derive with **input** semantics:
   generated/default/nullable columns become optional (a client omits what the server fills in),
-  strings/dates coerce from the wire. Non-column fields (a password) use `@DtoProperty`.
+  numbers/booleans coerce from the wire, and a date column takes an ISO-8601 string (with an
+  offset) and hands the domain a `Date`. Non-column fields (a password) use `@DtoProperty`.
+  `@OrmLink({extend})` refines a derived schema (add `.min()` to the column's `.max()`);
+  `@OrmLink({validation})` replaces the derived type while keeping the field linked to the column.
 - **`@ResponseDto`** — an output payload. `@OrmLink` fields derive with **output** semantics:
   a field is optional only when the column is nullable (generated/defaulted values are always
   present), and date columns are serialized as ISO strings. `@OrmLink({optional: true})` forces
@@ -236,6 +239,9 @@ The backends need a metadata-emitting toolchain for decorators (`experimentalDec
 `emitDecoratorMetadata` in tsconfig; run through `tsc`/SWC, not esbuild/tsx). The **frontends do
 not import any `@injitools/*` package** — they consume the generated `src/api/schema.gen.ts`
 interfaces through a thin `fetch` client, so there are no framework decorators in the web bundle.
+
+All packages are versioned in lockstep and released together from a single `v*.*.*` tag — see
+[CHANGELOG.md](CHANGELOG.md).
 
 ## License
 

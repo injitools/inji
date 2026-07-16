@@ -17,19 +17,19 @@ export default class LoginTokenOrm implements LoginTokenRecord<bigint> {
     id: number;
 
     @Index({unique: true})
-    @Column({type: 'varchar', length: 128})
+    @Column({length: 128})
     token_hash: string;
 
     @Index()
     @Column({type: 'bigint', unsigned: true})
     user_id: bigint;
 
-    @Column()
+    @Column({type: 'timestamptz'})
     expires_at: Date;
 
     @Column({type: 'timestamptz', nullable: true})
     consumed_at?: Date | null;
 
-    @CreateDateColumn()
+    @CreateDateColumn({type: 'timestamptz'})
     created_at: Date;
 }

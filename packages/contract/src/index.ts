@@ -54,7 +54,7 @@ export {
     PRIMITIVE_TYPES,
     boolFromQueryOrJson,
 } from "./validators/validation.js";
-export type {OrmZodResolver, PrimitiveType} from "./validators/validation.js";
+export type {OrmZodResolver, OrmZodOverrides, PrimitiveType} from "./validators/validation.js";
 
 // ── Reusable zod primitives ──────────────────────────────────────────────
 // Ready-made validators for @DtoProperty({validation: ...}) — they remove duplication in DTOs.

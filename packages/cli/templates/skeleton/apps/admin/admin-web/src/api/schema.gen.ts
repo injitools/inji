@@ -19,7 +19,7 @@ export interface CreateNewsDto {
     title: string;
     body: string;
     published?: boolean;
-    publish_at?: string;
+    publish_at?: string | null;
 }
 
 export interface ErrorResponseDto {
@@ -53,7 +53,7 @@ export interface UpdateNewsDto {
     title?: string;
     body?: string;
     published?: boolean;
-    publish_at?: string;
+    publish_at?: string | null;
 }
 
 export interface UserDto {

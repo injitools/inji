@@ -15,9 +15,9 @@ export default class ApiKeyOrm {
     user_id: bigint;
 
     @Index()
-    @Column({type: 'varchar', length: 255})
+    @Column({length: 255})
     hash: string;
 
-    @Column({nullable: true})
+    @Column({type: 'timestamptz', nullable: true})
     last_seen?: Date;
 }

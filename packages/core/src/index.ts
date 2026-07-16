@@ -77,7 +77,7 @@ export {
     PRIMITIVE_TYPES,
     boolFromQueryOrJson,
 } from "@injitools/contract";
-export type {OrmZodResolver, PrimitiveType} from "@injitools/contract";
+export type {OrmZodResolver, OrmZodOverrides, PrimitiveType} from "@injitools/contract";
 // Type-level inference of the static type from a DTO class (the same API as in the #contract entry).
 export type {Infer, InferInput, DtoConstructor} from "@injitools/contract";
 

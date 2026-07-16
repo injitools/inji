@@ -1,6 +1,6 @@
 {
   "name": "@injitools/auth",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Batteries-included auth for Inji: cookie sessions and Bearer API keys on TypeORM, with OpenAPI-aware middleware.",
   "keywords": [
     "inji",
@@ -46,8 +46,8 @@
     "prepack": "npm run build"
   },
   "dependencies": {
-    "@injitools/core": "^0.1.0",
-    "@injitools/db": "^0.1.0"
+    "@injitools/core": "^0.2.0",
+    "@injitools/db": "^0.2.0"
   },
   "peerDependencies": {
     "express": "^5.2.1",

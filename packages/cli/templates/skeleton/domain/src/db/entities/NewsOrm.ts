@@ -5,13 +5,14 @@ export default class NewsOrm {
     @PrimaryGeneratedColumn({type: "bigint"})
     id: bigint;
 
-    @Column({type: "varchar", length: 200})
+    @Column({length: 200})
     title: string;
 
+    // Explicit: an inferred `string` would become varchar, not text.
     @Column({type: "text"})
     body: string;
 
-    @Column({type: "boolean", default: true})
+    @Column({default: true})
     published: boolean;
 
     // Scheduled publication: a draft (published=false) with publish_at ≤ now()
@@ -19,12 +20,12 @@ export default class NewsOrm {
     @Column({type: "timestamptz", nullable: true})
     publish_at: Date | null;
 
-    @Column({type: "varchar", length: 120, nullable: true})
+    @Column({length: 120, nullable: true})
     author: string | null;
 
-    @CreateDateColumn()
+    @CreateDateColumn({type: "timestamptz"})
     created_at: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({type: "timestamptz"})
     updated_at: Date;
 }

@@ -13,9 +13,9 @@
   },
   "dependencies": {
     "@app/domain": "*",
-    "@injitools/auth": "^0.1.0-preview.1",
-    "@injitools/core": "^0.1.0-preview.1",
-    "@injitools/db": "^0.1.0-preview.1",
+    "@injitools/auth": "^0.2.0",
+    "@injitools/core": "^0.2.0",
+    "@injitools/db": "^0.2.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "express": "^5.2.1",

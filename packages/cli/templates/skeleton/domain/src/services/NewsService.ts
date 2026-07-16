@@ -21,8 +21,9 @@ export interface NewsCreateInput {
     title: string;
     body: string;
     published?: boolean;
-    /** ISO-8601 string; in the future → deferred publication (created as a draft). */
-    publish_at?: string | null;
+    /** In the future → deferred publication (created as a draft). The wire format (an ISO string)
+     *  is the API layer's business: the DTO parses it, the domain only ever sees a Date. */
+    publish_at?: Date | null;
     author?: string | null;
 }
 
@@ -30,7 +31,7 @@ export interface NewsUpdateInput {
     title?: string;
     body?: string;
     published?: boolean;
-    publish_at?: string | null;
+    publish_at?: Date | null;
 }
 
 export default class NewsService {
@@ -60,7 +61,7 @@ export default class NewsService {
     static async create(input: NewsCreateInput): Promise<NewsOrm> {
         // A future publish_at means a deferred publication: created as a draft (published=false),
         // the publisher worker flips it on schedule.
-        const publishAt = input.publish_at ? new Date(input.publish_at) : null;
+        const publishAt = input.publish_at ?? null;
         const scheduled = publishAt !== null && publishAt.getTime() > Date.now();
         const item = dbMain.manager.create(NewsOrm, {
             title: input.title,
@@ -78,7 +79,7 @@ export default class NewsService {
         if (patch.title !== undefined) item.title = patch.title;
         if (patch.body !== undefined) item.body = patch.body;
         if (patch.published !== undefined) item.published = patch.published;
-        if (patch.publish_at !== undefined) item.publish_at = patch.publish_at ? new Date(patch.publish_at) : null;
+        if (patch.publish_at !== undefined) item.publish_at = patch.publish_at ?? null;
         await dbMain.manager.save(item);
         return item;
     }

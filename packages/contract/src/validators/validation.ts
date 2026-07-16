@@ -14,7 +14,19 @@ const zodRegistry: { [id: string]: ZodType } = {}
  * generating a Zod schema from ORM column metadata is delegated outward.
  * The @injitools/db package registers the implementation via setOrmZodResolver() when imported.
  */
-export type OrmZodResolver = (db: unknown, ormClass: Function, ormProperty: string, direction: DtoDirection) => ZodType
+export type OrmZodOverrides = {
+    /** Replaces the schema derived from the column. */
+    validation?: ZodType
+    /** Receives the derived schema and returns a new one (e.g. adds .min() to a derived .max()). */
+    extend?: (schema: any) => ZodType
+}
+export type OrmZodResolver = (
+    db: unknown,
+    ormClass: Function,
+    ormProperty: string,
+    direction: DtoDirection,
+    overrides?: OrmZodOverrides,
+) => ZodType
 let ormZodResolver: OrmZodResolver | null = null
 
 export function setOrmZodResolver(resolver: OrmZodResolver) {
@@ -113,7 +125,13 @@ export function generateZodValidation(dtoClass: TDtoClass): ZodType {
                         `but no resolver is set. Install the @injitools/db package and import it before startup.`
                     )
                 }
-                object[key] = ormZodResolver((dto as TDtoOrm).db, (dto as TDtoOrm).ormClass, property.ormProperty, dto.direction)
+                object[key] = ormZodResolver(
+                    (dto as TDtoOrm).db,
+                    (dto as TDtoOrm).ormClass,
+                    property.ormProperty,
+                    dto.direction,
+                    {validation: property.validation, extend: property.extend},
+                )
                 // Per-field override: force optional for partial DTOs regardless of direction.
                 if (property.optional) {
                     object[key] = object[key].optional()

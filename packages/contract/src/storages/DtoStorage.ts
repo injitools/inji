@@ -42,6 +42,10 @@ export type TOrmLinkProperty = {
     // Forces the field optional regardless of the class direction — for partial DTOs
     // (e.g. an update body where every column-backed field is optional).
     optional?: boolean
+    // Replaces the schema derived from the column (see OrmLinkOptions in @injitools/db).
+    validation?: ZodType
+    // Extends the schema derived from the column, e.g. adding .min() on top of the derived .max().
+    extend?: (schema: any) => ZodType
 }
 
 export type TDtoPrimitiveProperty = {

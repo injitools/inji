@@ -5,10 +5,10 @@ import {Column, Entity, PrimaryColumn} from "typeorm";
 // out-of-band with `npm run ratelimit:reset` (see domain/src/rateLimitReset.ts).
 @Entity("rate_limits")
 export default class RateLimitOrm {
-    @PrimaryColumn({type: "varchar", length: 200})
+    @PrimaryColumn({length: 200})
     key: string;
 
-    @Column({type: "int", default: 0})
+    @Column({default: 0})
     count: number;
 
     // Start of the current window; once now - window_start ≥ windowMs the window resets to a fresh count.

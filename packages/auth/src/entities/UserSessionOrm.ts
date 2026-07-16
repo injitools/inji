@@ -13,7 +13,7 @@ import type {SessionRecord} from "../SessionService.js";
  */
 @Entity('user_sessions')
 export default class UserSessionOrm implements SessionRecord<bigint> {
-    @PrimaryColumn({type: 'varchar', length: 128})
+    @PrimaryColumn({length: 128})
     sid: string;
 
     @Index()
@@ -23,16 +23,16 @@ export default class UserSessionOrm implements SessionRecord<bigint> {
     @Column({type: 'jsonb', nullable: true})
     data?: Record<string, any> | null;
 
-    @Column({nullable: true})
+    @Column({type: 'timestamptz', nullable: true})
     last_seen: Date;
 
-    @CreateDateColumn()
+    @CreateDateColumn({type: 'timestamptz'})
     created_at: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({type: 'timestamptz'})
     updated_at: Date;
 
     @Index()
-    @Column()
+    @Column({type: 'timestamptz'})
     expires_at: Date;
 }

@@ -6,7 +6,7 @@ import type {SessionRecord, LoginTokenRecord} from "@injitools/auth";
 
 @Entity("uuid_user_sessions")
 export class UuidUserSessionOrm implements SessionRecord<string> {
-    @PrimaryColumn({type: "varchar", length: 128})
+    @PrimaryColumn({length: 128})
     sid: string;
 
     @Index()
@@ -16,13 +16,13 @@ export class UuidUserSessionOrm implements SessionRecord<string> {
     @Column({type: "jsonb", nullable: true})
     data?: Record<string, any> | null;
 
-    @Column({nullable: true})
+    @Column({type: "timestamptz", nullable: true})
     last_seen: Date;
 
-    @Column()
+    @Column({type: "timestamptz"})
     expires_at: Date;
 
-    @CreateDateColumn()
+    @CreateDateColumn({type: "timestamptz"})
     created_at: Date;
 }
 
@@ -32,19 +32,19 @@ export class UuidLoginTokenOrm implements LoginTokenRecord<string> {
     id: number;
 
     @Index({unique: true})
-    @Column({type: "varchar", length: 128})
+    @Column({length: 128})
     token_hash: string;
 
     @Index()
     @Column({type: "uuid"})
     user_id: string;
 
-    @Column()
+    @Column({type: "timestamptz"})
     expires_at: Date;
 
     @Column({type: "timestamptz", nullable: true})
     consumed_at?: Date | null;
 
-    @CreateDateColumn()
+    @CreateDateColumn({type: "timestamptz"})
     created_at: Date;
 }

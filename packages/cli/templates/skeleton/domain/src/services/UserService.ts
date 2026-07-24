@@ -1,8 +1,8 @@
 import {RequestError} from "@injitools/core";
+import {hashPassword, verifyPassword} from "@injitools/auth";
 
 import {dbMain} from "../db/dataSource.js";
 import UserOrm from "../db/entities/UserOrm.js";
-import {hashPassword, verifyPassword} from "../auth/password.js";
 
 // Domain service for users/credentials: shared business logic behind both apps' auth endpoints.
 // Returns UserOrm entities — each app projects them into its own DTO (a public AuthUserDto for the

@@ -1,7 +1,11 @@
 import {randomBytes, scryptSync, timingSafeEqual} from "node:crypto";
 
-// Password hashing via scrypt (built into node, no native dependencies).
-// Storage format: scrypt$<salt-hex>$<hash-hex>.
+/**
+ * Password hashing with scrypt — built into Node, no native dependency.
+ *
+ * Every app that has a password needs exactly this, byte for byte, so it lives in the package
+ * rather than being copied into each scaffold. Storage format: `scrypt$<salt-hex>$<hash-hex>`.
+ */
 
 export function hashPassword(password: string): string {
     const salt = randomBytes(16);

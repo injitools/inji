@@ -12,7 +12,7 @@ OpenAPI spec. The documentation cannot drift away from the validation.
 |---------|---------|
 | [`@injitools/core`](packages/core) | Core: declarative router, DTO/Zod validation, OpenAPI generation, middleware wiring, error hierarchy. No database dependency. |
 | [`@injitools/db`](packages/db) | TypeORM integration: `@OrmLink` derivation (request & response) from column metadata, `dbConnect`, value transformers. |
-| [`@injitools/auth`](packages/auth) | Batteries-included auth: cookie sessions and Bearer keys on TypeORM, OpenAPI-aware middleware factories. |
+| [`@injitools/auth`](packages/auth) | Batteries-included auth: cookie sessions, Bearer keys, magic links, login throttle and rate-limit guards on TypeORM, OpenAPI-aware middleware factories. |
 | [`@injitools/cli`](packages/cli) | CLI `inji init` — scaffolds a full monorepo (API + web + shadcn admin). |
 
 ## Quick start
@@ -110,9 +110,11 @@ app.use(router.toExpressRouter());
 - `@injitools/db` — `OrmLink` (+ deprecated `OrmDto`, now an alias of `RequestDto`), `dbConnect/dbClose`,
   `loadDbConfigFromEnv`, `findOrCreate/updateOrCreate`, `generateOrmZodValidation`,
   `BigTransformer/HexTransformer/IpTransformer`.
-- `@injitools/auth` — `SessionService`, `MagicLinkService`, `createBearerAuth`, `createCookieAuth`,
-  `User`, `Session`, `UserSessionOrm`, `ApiKeyOrm`, `LoginTokenOrm`, `AuthError`,
-  `generateToken`, `sha256`.
+- `@injitools/auth` — `SessionService`, `MagicLinkService`, `LoginThrottle`, `createRateLimit`,
+  `createSessionAuth` (+ `RequireRole`), `hashPassword`/`verifyPassword`,
+  `createBearerAuth`, `createCookieAuth`,
+  `User`, `Session`, `UserSessionOrm`, `ApiKeyOrm`, `LoginTokenOrm`, `LoginAttemptOrm`,
+  `RateLimitOrm`, `AuthError`, `generateToken`, `sha256`.
 
 ## Request-DTO vs Response-DTO (both derive from ORM)
 

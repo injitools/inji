@@ -11,7 +11,7 @@ export default class UserOrm {
     @Column({length: 120})
     name: string;
 
-    // scrypt$<salt-hex>$<hash-hex> — see domain/auth/password.ts
+    // scrypt$<salt-hex>$<hash-hex> — hashPassword/verifyPassword from @injitools/auth
     @Column({length: 255})
     password_hash: string;
 

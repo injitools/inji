@@ -3,11 +3,11 @@ import "reflect-metadata";
 import {randomBytes} from "node:crypto";
 
 import {dbConnect, dbClose} from "@injitools/db";
+import {hashPassword} from "@injitools/auth";
 
 import {dbMain} from "./db/dataSource.js";
 import UserOrm from "./db/entities/UserOrm.js";
 import NewsOrm from "./db/entities/NewsOrm.js";
-import {hashPassword} from "./auth/password.js";
 
 // Seeds the DB for development: an administrator + demo news items.
 // Run: npm run seed   (from the root) or  npm run seed -w @app/domain

@@ -1,6 +1,7 @@
 // Project core (@app/domain): the business layer shared by every app (client-api, admin-api,
 // publisher). It holds ONLY domain concerns — TypeORM entities + DataSource, domain services
-// (business logic), and auth (cookie sessions, passwords, authorization guards). No controllers
+// (business logic), and auth wiring (cookie session + the RequireRole guard from @injitools/auth,
+// configured for our user). No controllers
 // and no API DTOs live here: those are owned by each app under apps/<app>/src/api. Apps reuse
 // logic by calling these services, never by sharing controllers.
 //
@@ -17,11 +18,10 @@ export type {NewsListFilter, NewsCreateInput, NewsUpdateInput} from "./services/
 export {default as UserService} from "./services/UserService.js";
 export type {RegisterInput} from "./services/UserService.js";
 
-export * from "./auth/password.js";
+// Auth is provided by @injitools/auth; here we only re-export our wired-up pieces. Password hashing
+// is used as-is; cookie session + the RequireRole guard are configured for our user in auth/auth.ts.
+export {hashPassword, verifyPassword} from "@injitools/auth";
 export * from "./auth/auth.js";
-export * from "./auth/guards.js";
 
-// Shared infra: a DB-backed fixed-window rate-limit guard (@RateLimit), like the auth guards above.
-export {default as RateLimitOrm} from "./db/entities/RateLimitOrm.js";
-export {RateLimit, hitRateLimit} from "./rate-limit/rateLimit.js";
-export type {RateLimitOptions} from "./rate-limit/rateLimit.js";
+// Generic per-endpoint rate limit (@RateLimit), bound to our DataSource in rate-limit/rateLimit.ts.
+export {RateLimit, resetRateLimit} from "./rate-limit/rateLimit.js";

@@ -2,7 +2,7 @@ import type {Request, Response} from "express";
 
 import {Router, Get, Post, Body, Req, Res, Meta, Response as ApiResponse, ErrorResponseDto, RequestError} from "@injitools/core";
 
-import {UserService, startSession, endSession, RequireUser} from "@app/domain";
+import {UserService, startSession, endSession, RequireRole} from "@app/domain";
 import UserOrm from "@app/domain/db/entities/UserOrm";
 
 import {LoginDto} from "../Dto/LoginDto.js";
@@ -44,7 +44,7 @@ export default class AuthApi {
 
     // GET /auth/me — the current admin from the cookie session (401 if not logged in).
     @Get("me")
-    @RequireUser()
+    @RequireRole()
     @ApiResponse(200, AuthUserDto)
     async me(@Meta("user") user: UserOrm): Promise<AuthUserDto> {
         return toAuthUser(user);

@@ -5,11 +5,10 @@ import {fileURLToPath} from "node:url";
 import {DataSource} from "typeorm";
 
 import {loadDbConfigFromEnv} from "@injitools/db";
-import {UserSessionOrm} from "@injitools/auth";
+import {UserSessionOrm, RateLimitOrm} from "@injitools/auth";
 
 import UserOrm from "./entities/UserOrm.js";
 import NewsOrm from "./entities/NewsOrm.js";
-import RateLimitOrm from "./entities/RateLimitOrm.js";
 
 // .env lives at the ROOT of the monorepo and is shared by all backend processes (api, publisher):
 // each of them has its own cwd, and loadEnv()/process.loadEnvFile read .env relative to cwd.
@@ -31,8 +30,9 @@ export const dbMain = new DataSource({
     entities: [
         UserOrm,
         NewsOrm,
-        RateLimitOrm,   // fixed-window rate-limit counters (see rate-limit/rateLimit.ts)
-        UserSessionOrm, // ready-made cookie-session entity from @injitools/auth
+        // ready-made entities from @injitools/auth (cookie sessions + generic @RateLimit counters)
+        UserSessionOrm,
+        RateLimitOrm,
     ],
     // Auto-sync the schema ONLY in dev (NODE_ENV=dev, set in .env). Never in production —
     // it can silently alter/drop columns; use migrations there instead.

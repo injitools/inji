@@ -8,7 +8,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 All `@injitools/*` packages are versioned in lockstep and released together from a single `v*.*.*`
 tag, so one entry below covers every package; the affected package is named on each line.
 
-## [Unreleased]
+## [0.3.0] - 2026-07-24
+
+### Added
+
+- **`@injitools/auth` — the auth module the scaffold used to copy is now IN the package.** `inji
+  init` seeded every project with its own `domain/src/auth` and `domain/src/rate-limit`: password
+  hashing, a rate-limit guard, cookie-session plumbing and role guards. Identical in every app, and
+  the part where a mistake becomes an account takeover — exactly what a framework should own. Moved
+  in, with portable entities so one copy serves MySQL and postgres:
+
+  - **`LoginThrottle`** — brute-force protection for sign-in, append-and-count. Every attempt is one
+    row (`LoginAttemptOrm`: `user_id?`, `ip`, `success`, `user_agent`, `created_at`), never a counter
+    to upsert and race on — the copy it replaces threw `Duplicate entry` mid-login when a window
+    expired and two paths re-created the same row. Two axes an operator actually reasons about:
+    failures against one **account**, and failures from one **ip** (a spray, where the account is
+    irrelevant). Either over its cap blocks; the block lifts as failures age out. The same rows are
+    the "recent sign-ins & attempts on your account" a UI can show — hence `history()` and `user_agent`.
+  - **`createRateLimit`** — the generic `@RateLimit({bucket, limit, windowMs})` guard for arbitrary
+    endpoints (register, password reset), also append-and-count (`RateLimitOrm`).
+  - **`createSessionAuth`** — cookie-session plumbing (`start/end/current/requireUser`) plus a single
+    **`RequireRole(...roles)`** guard that replaces the copied `RequireUser`/`RequireAdmin`. Called
+    once per subject: an admin (cookie `sid`, roles) and a client cabinet (cookie `csid`, no roles,
+    a different `req.meta` key) share it. `RequireRole()` ≡ any logged-in subject.
+  - **`hashPassword`/`verifyPassword`** — scrypt, byte-for-byte what every app had copied.
 
 ## [0.2.1] - 2026-07-17
 
@@ -143,7 +166,7 @@ Initial public release of Inji on npm: `@injitools/contract`, `@injitools/core`,
 - **`@injitools/cli`** — `inji init`, scaffolding an API-first, app-centric monorepo (API + web +
   shadcn admin).
 
-[Unreleased]: https://github.com/injitools/inji/compare/v0.2.1...HEAD
+[0.3.0]: https://github.com/injitools/inji/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/injitools/inji/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/injitools/inji/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/injitools/inji/releases/tag/v0.1.0

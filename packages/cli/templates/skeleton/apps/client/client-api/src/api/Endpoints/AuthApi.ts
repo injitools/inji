@@ -2,7 +2,7 @@ import type {Request, Response} from "express";
 
 import {Router, Get, Post, Body, Req, Res, Meta, Response as ApiResponse, ErrorResponseDto, RequestError} from "@injitools/core";
 
-import {UserService, startSession, endSession, RequireUser, RateLimit} from "@app/domain";
+import {UserService, startSession, endSession, RequireRole, RateLimit} from "@app/domain";
 import UserOrm from "@app/domain/db/entities/UserOrm";
 
 import {LoginDto} from "../Dto/LoginDto.js";
@@ -26,7 +26,7 @@ export default class AuthApi {
     // doubles as a login-enumeration oracle — the hourly cap keeps that (and brute-force) in check.
     // Unblock during development with `npm run ratelimit:reset -- register`.
     // Only 409 is declared here: 400 comes from the validated @Body and 429 from @RateLimit — both
-    // add themselves to OpenAPI, the same way @RequireUser adds its 401 to `me` below.
+    // add themselves to OpenAPI, the same way @RequireRole() adds its 401 to `me` below.
     @Post("register")
     @RateLimit({bucket: "register", limit: 5, windowMs: 60 * 60 * 1000})
     @ApiResponse(200, AuthUserDto)
@@ -57,9 +57,9 @@ export default class AuthApi {
     }
 
     // GET /auth/me — the current user from the cookie session (401 if not logged in).
-    // The @RequireUser guard puts the user in req.meta.user and adds the 401 to OpenAPI itself.
+    // The @RequireRole() guard puts the user in req.meta.user and adds the 401 to OpenAPI itself.
     @Get("me")
-    @RequireUser()
+    @RequireRole()
     @ApiResponse(200, AuthUserDto)
     async me(@Meta("user") user: UserOrm): Promise<AuthUserDto> {
         return toAuthUser(user);

@@ -11,3 +11,6 @@ dist/
 # Local dev artifacts — never committed (registry/tokens/MCP)
 .npmrc
 .mcp.json
+
+# Deferred WIP kept out of releases (e.g. social/connector sign-in, pulled from 0.3.0)
+deferred/

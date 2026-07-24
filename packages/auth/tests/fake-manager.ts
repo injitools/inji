@@ -1,5 +1,6 @@
 // Lightweight in-memory EntityManager for auth tests: implements the subset of the TypeORM API
-// used by SessionService and MagicLinkService (insert/findOneBy/find/delete/update).
+// used by SessionService, MagicLinkService, LoginThrottle and the rate-limit guard
+// (insert/findOneBy/findBy/find/delete/update).
 // No real DB driver — the tests are portable (including CI) and fast.
 //
 // The store is keyed by EntityTarget (the class). Records are plain object clones. The
@@ -59,6 +60,12 @@ export class FakeManager {
 
     async find(target: unknown): Promise<any[]> {
         return this.dump(target);
+    }
+
+    async findBy(target: unknown, where: Row): Promise<any[]> {
+        return this.rows(target)
+            .filter((r) => this.matches(r, where))
+            .map((r) => ({...r}));
     }
 
     async delete(target: unknown, where: Row) {

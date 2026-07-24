@@ -1,6 +1,6 @@
 import {Router, Get, Post, Put, Delete, Query, Body, Path, Meta, Response as ApiResponse, ErrorResponseDto} from "@injitools/core";
 
-import {NewsService, RequireAdmin} from "@app/domain";
+import {NewsService, RequireRole} from "@app/domain";
 import NewsOrm from "@app/domain/db/entities/NewsOrm";
 import UserOrm from "@app/domain/db/entities/UserOrm";
 
@@ -11,7 +11,7 @@ import {UpdateNewsDto} from "../Dto/UpdateNewsDto.js";
 import {MessageDto} from "../Dto/MessageDto.js";
 
 // Admin news controller (admin-api) — the FULL news surface: list (incl. drafts), create, update,
-// delete. Admin role only (@RequireAdmin: adds the cookie security scheme + 401/403 to OpenAPI).
+// delete. Admin role only (@RequireRole("admin"): adds the cookie security scheme + 401/403 to OpenAPI).
 // Thin: delegates to the domain NewsService and projects entities into the admin's full NewsDto.
 
 // Projects a news entity into the admin's full view (scheduling + updated meta included).
@@ -32,7 +32,7 @@ function toNewsDto(n: NewsOrm): NewsDto {
 export default class NewsAdminApi {
     // GET /news/list — admin list; optional ?published filter (drafts included by default) and ?limit.
     @Get()
-    @RequireAdmin()
+    @RequireRole("admin")
     @ApiResponse(200, NewsDto)
     async list(@Query() query: NewsListQuery): Promise<NewsDto[]> {
         const items = await NewsService.list({published: query.published, limit: query.limit});
@@ -41,9 +41,9 @@ export default class NewsAdminApi {
 
     // POST /news/create — create. If publish_at is in the future, this is a deferred publication:
     // NewsService creates it as a draft (published=false), and the publisher worker publishes it on schedule.
-    // Nothing else to declare: 400 comes from the validated @Body, 401/403 from @RequireAdmin.
+    // Nothing else to declare: 400 comes from the validated @Body, 401/403 from @RequireRole("admin").
     @Post()
-    @RequireAdmin()
+    @RequireRole("admin")
     @ApiResponse(200, NewsDto)
     async create(@Body() body: CreateNewsDto, @Meta("user") admin: UserOrm): Promise<NewsDto> {
         const item = await NewsService.create({
@@ -58,7 +58,7 @@ export default class NewsAdminApi {
 
     // PUT /news/:id — update (admin).
     @Put(":id")
-    @RequireAdmin()
+    @RequireRole("admin")
     @ApiResponse(200, NewsDto)
     @ApiResponse(404, ErrorResponseDto)
     async update(@Path("id") id: string, @Body() body: UpdateNewsDto): Promise<NewsDto> {
@@ -73,7 +73,7 @@ export default class NewsAdminApi {
 
     // DELETE /news/:id — delete (admin).
     @Delete(":id")
-    @RequireAdmin()
+    @RequireRole("admin")
     @ApiResponse(200, MessageDto)
     @ApiResponse(404, ErrorResponseDto)
     async remove(@Path("id") id: string): Promise<MessageDto> {

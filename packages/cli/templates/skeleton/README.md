@@ -16,7 +16,7 @@ __PROJECT_NAME__/
 ├─ domain/               @app/domain — BUSINESS CORE ONLY (shared by every app):
 │   ├─ src/db/           entities (TypeORM) + DataSource (loads the shared .env from the root)
 │   ├─ src/services/     domain services — the business logic (NewsService, UserService)
-│   ├─ src/auth/         cookie sessions, passwords (scrypt), guard decorators (@RequireUser/@RequireAdmin)
+│   ├─ src/auth/         cookie session + the @RequireRole guard, wired to @injitools/auth (scrypt passwords included)
 │   └─ src/seed.ts       database seeding (admin + a generated password, printed once + demo news)
 ├─ apps/                 self-contained apps — each api owns its api/Endpoints + api/Dto + entry + codegen,
 │  │                     its web frontend lives right next to it:
@@ -35,8 +35,9 @@ __PROJECT_NAME__/
 ### How it all fits together (API-first, app-centric)
 
 1. **`@app/domain` is the business core — nothing else.** Entities (TypeORM), DataSource, domain
-   services (`NewsService`, `UserService` — the business logic) and auth (cookie sessions,
-   passwords, guards). **No controllers and no API DTOs live here.** It's wired into every app via
+   services (`NewsService`, `UserService` — the business logic) and auth wiring (the cookie session
+   and the `@RequireRole` guard from `@injitools/auth`, configured for this app's user). **No
+   controllers and no API DTOs live here.** It's wired into every app via
    TS project references (the root `tsconfig.json` is a solution file; `tsc -b` enforces the build
    order domain → apps).
 2. **Each app is self-contained and owns its API.** An app under `apps/` declares its OWN
@@ -55,10 +56,11 @@ __PROJECT_NAME__/
    `NewsOrm`, two projections, one owned by each app. Because the runtime sends the return value as-is
    (`res.json`), each controller maps the entity into its DTO shape explicitly, so a public reader
    never receives admin-only fields.
-4. **Authorization uses guard decorators, not checks inside the method body.** `@RequireUser()` and
-   `@RequireAdmin()` (from `@app/domain`) are attached to a method as middleware: they validate the
-   session BEFORE the handler, place the user in `req.meta.user` (read via `@Meta("user")`),
-   and automatically add the cookie-session security scheme and 401/403 responses to OpenAPI.
+4. **Authorization uses guard decorators, not checks inside the method body.** `@RequireRole()` (any
+   logged-in user) and `@RequireRole("admin")` (from `@app/domain`) are attached to a method as
+   middleware: they validate the session BEFORE the handler, place the user in `req.meta.user` (read
+   via `@Meta("user")`), and automatically add the cookie-session security scheme and 401/403
+   responses to OpenAPI.
 5. **Each app serves OpenAPI automatically** (`/openapi.json`, Swagger UI at `/swagger`) from its own
    router.
 6. **The frontends consume generated interfaces.** `npm run gen` builds each app's OpenAPI and writes
@@ -125,7 +127,7 @@ npm run gen        # overwrites apps/client/client-web/src/api/schema.gen.ts and
 
 - **Authentication** — registration/login via cookie session (`@injitools/auth` `SessionService`,
   `hashTokens` → only `sha256(sid)` in the database), passwords via scrypt. Access is gated by
-  the guard decorators `@RequireUser`/`@RequireAdmin` (the `admin` role grants access to the admin panel).
+  the guard decorator `@RequireRole()` / `@RequireRole("admin")` (the `admin` role grants access to the admin panel).
 - **News** — a public feed on web, full CRUD in the admin panel.
 - **Scheduled publishing** — a news item has a `publish_at`; a draft with a future date
   is published by the `publisher` worker on schedule.

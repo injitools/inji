@@ -1,4 +1,4 @@
-// Unit smoke of the ported contract layer: decorators register metadata,
+// Unit smoke of the contract layer: decorators register metadata,
 // Zod schema generation infers types from the code (design:type), dataToDto builds instances,
 // the canonical ErrorResponseDto validates.
 //

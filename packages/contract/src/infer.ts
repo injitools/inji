@@ -20,7 +20,7 @@
 import type {UrlLike} from "./validators/validation.js";
 
 // The constructor of a DTO class. We accept both abstract and regular classes — InstanceType is
-// taken from either. Target DX: Infer<typeof CheckinDto>.
+// taken from either. Target DX: Infer<typeof LocationDto>.
 export type DtoConstructor = abstract new (...args: any[]) => any;
 
 // Scalar "leaves" that we do NOT unfold as a nested DTO. UrlLike/Date are classes,
@@ -56,7 +56,7 @@ type InputOf<V> =
  * Equivalent to `z.infer<ReturnType<typeof generateZodValidation>>` for the same DTO.
  *
  * @example
- *   type Checkin = Infer<typeof CheckinDto>; // { ... } without describing it by hand
+ *   type Location = Infer<typeof LocationDto>; // { ... } without describing it by hand
  */
 export type Infer<T extends DtoConstructor> = OutputOf<InstanceType<T>>;
 

@@ -1,0 +1,69 @@
+{
+  "name": "@injitools/bot",
+  "version": "0.4.0",
+  "description": "Messenger-agnostic chat-bot core for Inji: commands, dialog input, message templates and keyboards over pluggable social providers (Telegram, VK) and a pluggable storage (TypeORM included).",
+  "keywords": [
+    "inji",
+    "bot",
+    "chatbot",
+    "telegram",
+    "vk",
+    "typeorm",
+    "typescript"
+  ],
+  "author": "Alexey Krupsky <admin@inji.ru>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/injitools/inji.git",
+    "directory": "packages/bot"
+  },
+  "homepage": "https://github.com/injitools/inji/tree/main/packages/bot#readme",
+  "bugs": "https://github.com/injitools/inji/issues",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./typeorm": {
+      "types": "./dist/typeorm.d.ts",
+      "import": "./dist/typeorm.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20.12.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && vitest run",
+    "prepack": "npm run build"
+  },
+  "peerDependencies": {
+    "typeorm": "^0.3.28"
+  },
+  "peerDependenciesMeta": {
+    "typeorm": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@swc/core": "^1.15.40",
+    "@types/node": "^24.10.13",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.28",
+    "typescript": "^5.9.3",
+    "unplugin-swc": "^1.5.9",
+    "vite": "^8.0.16",
+    "vitest": "^4.1.8"
+  }
+}

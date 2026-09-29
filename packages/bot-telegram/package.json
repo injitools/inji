@@ -1,0 +1,58 @@
+{
+  "name": "@injitools/bot-telegram",
+  "version": "0.4.0",
+  "description": "Telegram provider for @injitools/bot: a Bot API client (long polling, SOCKS proxy, MarkdownV2 auto-escaping) and the MultiBot social provider on top of it.",
+  "keywords": [
+    "inji",
+    "bot",
+    "telegram",
+    "telegram-bot-api",
+    "chatbot",
+    "typescript"
+  ],
+  "author": "Alexey Krupsky <admin@inji.ru>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/injitools/inji.git",
+    "directory": "packages/bot-telegram"
+  },
+  "homepage": "https://github.com/injitools/inji/tree/main/packages/bot-telegram#readme",
+  "bugs": "https://github.com/injitools/inji/issues",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20.12.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && vitest run",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@injitools/bot": "^0.4.0",
+    "form-data": "^4.0.2",
+    "got": "^14.4.7",
+    "socks-proxy-agent": "^10.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.13",
+    "typescript": "^5.9.3",
+    "vite": "^8.0.16",
+    "vitest": "^4.1.8"
+  }
+}

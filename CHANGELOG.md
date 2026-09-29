@@ -8,6 +8,68 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 All `@injitools/*` packages are versioned in lockstep and released together from a single `v*.*.*`
 tag, so one entry below covers every package; the affected package is named on each line.
 
+## [0.4.0] - 2026-09-29
+
+### Added
+
+- **`@injitools/bot`, `@injitools/bot-telegram`, `@injitools/bot-vk` — the chat-bot layer.**
+  Three packages, one abstraction: the core knows nothing about a messenger or a database, the
+  two providers know nothing about each other.
+
+  - **`@injitools/bot`** — `MultiBot`: `command(...)`, `message(...)` (exact text or `'*'`),
+    `input(...)` for "ask, then route the next message here" dialogs, `onBlocked(...)`. The part
+    every provider used to copy is now one pipeline, **`bot.ingest(provider, event, parse)`**:
+    dedup by `(provider, eventId)`, the raw update stored verbatim, chat find-or-create (by peer,
+    or by a provider-scoped chat id for groups), `/command args` parsing, message storage,
+    dispatch, `executed`/`error` on the stored event. A throwing handler is logged and recorded on
+    the event — the poll loop goes on, the failure stays visible in the table. Templates
+    (`text/br/link/image/keyboard`) render per provider format; keyboards are inline or reply,
+    buttons are text / `.command(name, args)` / `.link(url)`.
+    `@injitools/bot/typeorm` is the storage on TypeORM (`MultiBotTypeOrmProvider` +
+    `multiBotEntities`, five tables) — a subpath, so `typeorm` is an optional peer.
+    `MultiBotMemoryStorage` is the in-memory reference implementation for tests and prototypes.
+  - **`@injitools/bot-telegram`** — `TelegramApi` (Bot API over `got`, optional SOCKS5 proxy via
+    `TELEGRAM_PROXY_URL` or `{proxyUrl}`, refusals as `TelegramApiError` with the `error_code`
+    kept and an `isBlocked` getter) and `MultiBotTelegramProvider` (long polling with the offset
+    persisted, `message`/`callback_query` → MultiBot, MarkdownV2 rendering with
+    validate-then-auto-escape, send throttling, 403 → `onBlocked`). `handleUpdate(update)` is the
+    webhook entry point.
+  - **`@injitools/bot-vk`** — `VkApi` (community token, `call`, Bots Long Poll, photo upload) and
+    `MultiBotVkProvider` (long poll with `failed` 1/2/3 recovery, `message_new`/`message_event` →
+    MultiBot, `message_allow`/`message_deny` → `onBlocked`, refusal codes 7/15/901/902 →
+    `onBlocked`). `handleUpdates(updates)` is the Callback API entry point.
+
+### Security
+
+- **`@injitools/bot-telegram`, `@injitools/bot-vk` — a failed request no longer carries the token
+  out.** The Bot API token is in every request URL, the VK token in the form, the Long Poll key in
+  the URL; got 14 puts the URL into its error message and keeps the whole request on the error
+  object. So a 502 from a proxy wrote the Telegram token into the `error` MultiBot stores for a
+  failed update, and a plain `console.error(e)` of any network failure printed it for both
+  providers. Errors are now rebuilt by the new **`redactError(e, secrets)`** (exported from
+  `@injitools/bot`): name, message, stack, `code` and the HTTP status kept, secrets masked as
+  `<redacted>`, the request dropped. Refusals are unchanged (`TelegramApiError`/`VkApiError`); a
+  non-JSON HTTP failure of the Bot API is now a `TelegramApiError` with the status as its code.
+- The provider READMEs now say that webhook/Callback API authentication (`secret_token` header,
+  the VK `secret` field) is the caller's job: `handleUpdate(s)` trusts what it is given.
+
+### Fixed
+
+- **`@injitools/bot-telegram` — MarkdownV2 auto-fix no longer eats the character after an
+  unclosed `__`, ```` ``` ```` or `![`.** The unclosed-entity pass spliced `markup.length`
+  elements out of an array where the markup had been pushed as a single element, so `a __b` went
+  out as `a \_\_` — text lost, no error. Caught by the new tests.
+- **`@injitools/bot/typeorm` — booleans in chat options read back correctly.** Writing `true`
+  into a string column leaves the driver to pick the text (`'true'` on postgres); decoding it with
+  `!!+value` gives `NaN` → `false`, always. Now stored as `'true'/'false'` explicitly and decoded by
+  text; rows holding `'1'/'0'` still read back.
+- **`@injitools/bot-telegram` — `getUpdates` long-poll timeout is 25 seconds, not 25 000.** The
+  Bot API takes seconds, not milliseconds.
+
+### Changed
+
+- All packages bumped to 0.4.0 in lockstep (the scaffold pins `^0.4.0`).
+
 ## [0.3.0] - 2026-07-24
 
 ### Added
@@ -166,6 +228,7 @@ Initial public release of Inji on npm: `@injitools/contract`, `@injitools/core`,
 - **`@injitools/cli`** — `inji init`, scaffolding an API-first, app-centric monorepo (API + web +
   shadcn admin).
 
+[0.4.0]: https://github.com/injitools/inji/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/injitools/inji/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/injitools/inji/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/injitools/inji/compare/v0.1.0...v0.2.0

@@ -1,7 +1,6 @@
 # Inji
 
 A declarative API framework on **Express + Zod + TypeORM** with **OpenAPI 3.1** auto-generation.
-Extracted from a production monolith into a standalone set of packages.
 
 One source of truth: decorated DTO classes produce both runtime validation (Zod) and the
 OpenAPI spec. The documentation cannot drift away from the validation.
@@ -13,6 +12,9 @@ OpenAPI spec. The documentation cannot drift away from the validation.
 | [`@injitools/core`](packages/core) | Core: declarative router, DTO/Zod validation, OpenAPI generation, middleware wiring, error hierarchy. No database dependency. |
 | [`@injitools/db`](packages/db) | TypeORM integration: `@OrmLink` derivation (request & response) from column metadata, `dbConnect`, value transformers. |
 | [`@injitools/auth`](packages/auth) | Batteries-included auth: cookie sessions, Bearer keys, magic links, login throttle and rate-limit guards on TypeORM, OpenAPI-aware middleware factories. |
+| [`@injitools/bot`](packages/bot) | Messenger-agnostic chat-bot core: commands, dialog input, templates and keyboards, the incoming pipeline (dedup, storage, dispatch) over pluggable social providers; TypeORM storage under `@injitools/bot/typeorm`. |
+| [`@injitools/bot-telegram`](packages/bot-telegram) | Telegram provider for `@injitools/bot`: Bot API client (long polling, SOCKS proxy, MarkdownV2 auto-escaping) + the MultiBot provider. |
+| [`@injitools/bot-vk`](packages/bot-vk) | VK provider for `@injitools/bot`: community API client (Bots Long Poll, photo upload) + the MultiBot provider. |
 | [`@injitools/cli`](packages/cli) | CLI `inji init` — scaffolds a full monorepo (API + web + shadcn admin). |
 
 ## Quick start
@@ -71,6 +73,10 @@ form highlighting.
    |   +-- @injitools/db    registers the ORM validation resolver into core via setOrmZodResolver()
    |          ^
    +--------  @injitools/auth   cookie/bearer + entities + SessionService
+@injitools/bot    -- chat-bot core (no messenger, no DB; typeorm is an optional peer for ./typeorm)
+   ^   ^
+   |   +-- @injitools/bot-telegram   Bot API client + Telegram provider
+   +------ @injitools/bot-vk         VK API client + VK provider
 @injitools/cli    -- scaffold generator (no runtime dependencies)
 ```
 
@@ -115,6 +121,14 @@ app.use(router.toExpressRouter());
   `createBearerAuth`, `createCookieAuth`,
   `User`, `Session`, `UserSessionOrm`, `ApiKeyOrm`, `LoginTokenOrm`, `LoginAttemptOrm`,
   `RateLimitOrm`, `AuthError`, `generateToken`, `sha256`.
+- `@injitools/bot` — `MultiBot` (`command/message/input/onBlocked`, `ingest`), `MultiBotChat`,
+  `MultiBotMessage`, `MultiBotMessageTemplate`, `MultiBotKeyboardBuilder`, `ButtonType`,
+  `MultiBotMessageType`, `parseCommandText`, `MultiBotMemoryStorage`, the
+  `IMultiBotSocialProvider`/`IMultiBotStorageProvider` contracts, `redactError`.
+- `@injitools/bot/typeorm` — `MultiBotTypeOrmProvider`, `multiBotEntities` (+ the five `MultiBot*Orm`).
+- `@injitools/bot-telegram` — `MultiBotTelegramProvider`, `TelegramApi`, `TelegramApiError`,
+  `ensureMarkdownV2`/`escapeMarkdownV2`, `TelegramApiUserType`, the Bot API types.
+- `@injitools/bot-vk` — `MultiBotVkProvider`, `VkApi`, `VkApiError`, `VkApiEvent`, `VkApiUserType`.
 
 ## Request-DTO vs Response-DTO (both derive from ORM)
 
@@ -184,7 +198,7 @@ Ready-made validators for `@DtoProperty({validation})` — no duplicated validat
 import {RequestDto, DtoProperty, Uuid, Latitude, Longitude, IsoDateTime} from "@injitools/core";
 
 @RequestDto()
-class CheckinDto {
+class LocationDto {
   @DtoProperty({validation: Uuid}) id: string;
   @DtoProperty({validation: Latitude}) lat: number;   // -90..90, coerced from query
   @DtoProperty({validation: Longitude}) lng: number;  // -180..180

@@ -1,5 +1,5 @@
 // Environment detection and explicit loading of .env files.
-// Unlike the original, loading is extracted into the loadEnv() function and is NOT performed
+// Loading lives in the loadEnv() function and is NOT performed
 // as a side effect of import — call it at the application's entry point.
 
 import fs from "fs";

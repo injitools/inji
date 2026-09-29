@@ -62,7 +62,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_INJITOOLS_TOKEN }}
         run: |
           set -euo pipefail
-          for pkg in contract core db auth cli; do
+          for pkg in contract core db auth bot bot-telegram bot-vk cli; do
             name="@injitools/$pkg"
             ver="$(node -p "require('./packages/$pkg/package.json').version")"
             if npm view "$name@$ver" version >/dev/null 2>&1; then

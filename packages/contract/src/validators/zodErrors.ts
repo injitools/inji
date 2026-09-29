@@ -2,8 +2,8 @@
 // depends only on the ZodIssue type, without the express/typeorm runtime — so the web imports
 // the SAME field type that the server puts into ErrorResponseDto.payload.
 //
-// The format mirrors Zod flatten(): { formErrors, fieldErrors } — exactly what the
-// checkin-adventure frontend expects for highlighting form fields.
+// The format mirrors Zod flatten(): { formErrors, fieldErrors } — a shape a frontend can map
+// straight onto form fields for highlighting.
 // A structural issue type (path + message) instead of the zod type: it decouples us from the evolution
 // of zod's internal types (ZodIssue is marked deprecated in v4) and accepts both ZodError.issues
 // and any compatible source.

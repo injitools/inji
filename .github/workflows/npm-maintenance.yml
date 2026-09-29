@@ -65,11 +65,11 @@ jobs:
         run: |
           set -uo pipefail
           fail=0
-          # Reverse dependency order (contract <- core <- db <- auth; cli is standalone).
-          # npm refuses to unpublish a version while something in the registry still depends on it,
-          # and these packages depend on each other — so the leaves have to go first, otherwise
-          # every parent is rejected with E405 "has dependent packages in the registry".
-          for pkg in cli auth db core contract; do
+          # Reverse dependency order (contract <- core <- db <- auth; bot <- bot-telegram/bot-vk;
+          # cli is standalone). npm refuses to unpublish a version while something in the registry
+          # still depends on it, and these packages depend on each other — so the leaves have to go
+          # first, otherwise every parent is rejected with E405 "has dependent packages in the registry".
+          for pkg in cli bot-telegram bot-vk bot auth db core contract; do
             name="@injitools/$pkg"
             for ver in ${{ inputs.versions }}; do
               spec="$name@$ver"
@@ -97,7 +97,7 @@ jobs:
         if: always()
         run: |
           echo "=== remaining versions ==="
-          for pkg in contract core db auth cli; do
+          for pkg in contract core db auth bot bot-telegram bot-vk cli; do
             printf '%-10s ' "$pkg"
             npm view "@injitools/$pkg" versions --json 2>/dev/null | tr -d '\n[] "' || echo "(gone)"
             echo

@@ -1,6 +1,6 @@
 {
   "name": "@injitools/db",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "TypeORM integration for Inji: ORM-derived DTOs, Zod schema generation from column metadata, value transformers and connection helpers.",
   "keywords": [
     "inji",
@@ -45,7 +45,7 @@
     "prepack": "npm run build"
   },
   "dependencies": {
-    "@injitools/core": "^0.3.0"
+    "@injitools/core": "^0.4.0"
   },
   "peerDependencies": {
     "typeorm": "^0.3.28",

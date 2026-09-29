@@ -8,7 +8,7 @@ export type CookieSameSite = 'Lax' | 'Strict' | 'None'
 /**
  * Minimal structural shape of the session entity. Any custom entity that
  * satisfies it plugs into SessionService without `as any`. The user-key type is
- * parameterized by TUserId (bigint by default; string/uuid for checkin-adventure).
+ * parameterized by TUserId (bigint by default; string/uuid work as well).
  */
 export interface SessionRecord<TUserId = unknown> {
     sid: string;

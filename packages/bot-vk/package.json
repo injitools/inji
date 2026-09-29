@@ -1,0 +1,57 @@
+{
+  "name": "@injitools/bot-vk",
+  "version": "0.4.0",
+  "description": "VK provider for @injitools/bot: a community API client (Bots Long Poll, messages, photo upload) and the MultiBot social provider on top of it.",
+  "keywords": [
+    "inji",
+    "bot",
+    "vk",
+    "vkontakte",
+    "chatbot",
+    "typescript"
+  ],
+  "author": "Alexey Krupsky <admin@inji.ru>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/injitools/inji.git",
+    "directory": "packages/bot-vk"
+  },
+  "homepage": "https://github.com/injitools/inji/tree/main/packages/bot-vk#readme",
+  "bugs": "https://github.com/injitools/inji/issues",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20.12.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && vitest run",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@injitools/bot": "^0.4.0",
+    "form-data": "^4.0.2",
+    "got": "^14.4.7"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.13",
+    "typescript": "^5.9.3",
+    "vite": "^8.0.16",
+    "vitest": "^4.1.8"
+  }
+}

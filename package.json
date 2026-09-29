@@ -9,13 +9,16 @@
     "packages/core",
     "packages/db",
     "packages/auth",
+    "packages/bot",
+    "packages/bot-telegram",
+    "packages/bot-vk",
     "packages/cli"
   ],
   "scripts": {
-    "build": "npm run build -w @injitools/contract && npm run build -w @injitools/core && npm run build -w @injitools/db && npm run build -w @injitools/auth && npm run build -w @injitools/cli",
-    "test": "npm run test -w @injitools/contract && npm run test -w @injitools/core && npm run test -w @injitools/db && npm run test -w @injitools/auth",
-    "clean": "node -e \"const{rmSync}=require('fs');for(const p of ['contract','core','db','auth','cli'])rmSync(`packages/${p}/dist`,{recursive:true,force:true})\"",
-    "typecheck": "npm run typecheck -w @injitools/contract && npm run typecheck -w @injitools/core && npm run typecheck -w @injitools/db && npm run typecheck -w @injitools/auth && npm run typecheck -w @injitools/cli",
+    "build": "npm run build -w @injitools/contract && npm run build -w @injitools/core && npm run build -w @injitools/db && npm run build -w @injitools/auth && npm run build -w @injitools/bot && npm run build -w @injitools/bot-telegram && npm run build -w @injitools/bot-vk && npm run build -w @injitools/cli",
+    "test": "npm run test -w @injitools/contract && npm run test -w @injitools/core && npm run test -w @injitools/db && npm run test -w @injitools/auth && npm run test -w @injitools/bot && npm run test -w @injitools/bot-telegram && npm run test -w @injitools/bot-vk",
+    "clean": "node -e \"const{rmSync}=require('fs');for(const p of ['contract','core','db','auth','bot','bot-telegram','bot-vk','cli'])rmSync(`packages/${p}/dist`,{recursive:true,force:true})\"",
+    "typecheck": "npm run typecheck -w @injitools/contract && npm run typecheck -w @injitools/core && npm run typecheck -w @injitools/db && npm run typecheck -w @injitools/auth && npm run typecheck -w @injitools/bot && npm run typecheck -w @injitools/bot-telegram && npm run typecheck -w @injitools/bot-vk && npm run typecheck -w @injitools/cli",
     "verify:skeleton": "node scripts/verify-skeleton.mjs"
   },
   "engines": {

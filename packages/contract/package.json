@@ -1,6 +1,6 @@
 {
   "name": "@injitools/contract",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "The DTO/validation layer of Inji: RequestDto/ResponseDto decorators, metadata store and Zod validation. Depends only on zod + reflect-metadata — no express or typeorm (layering hygiene).",
   "keywords": [
     "inji",
